@@ -53,7 +53,7 @@ const FilmReservationForm = () => {
     return start < end;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateDates()) {
@@ -61,8 +61,22 @@ const FilmReservationForm = () => {
       return;
     }
 
-    console.log('Form submitted:', formData);
-    setSubmitted(true);
+    try {
+      await fetch('https://script.google.com/macros/s/AKfycbz_wLOzGWw3es4YOATk0tOoB7aKioC-0ZcHz6AswiIjeb-ZJqV1XTPy6nrwet2fXouC/exec', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'text/plain',  // Changed from application/json due to CORS
+        },
+        body: JSON.stringify(formData)
+      });
+
+      // If we get here, assume success since we can't check response with no-cors
+      setSubmitted(true);
+    } catch (err) {
+      setError('Failed to submit form. Please try again.');
+      console.error('Submission error:', err);
+    }
   };
 
   if (submitted) {
