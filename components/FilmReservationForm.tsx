@@ -69,7 +69,7 @@ const FilmReservationForm = () => {
           <Alert>
             <Calendar className="h-4 w-4" />
             <AlertDescription>
-              Your reservation request for "{formData.filmTitle}" has been submitted. 
+              Your reservation request for &quot;{formData.filmTitle}&quot; has been submitted. 
               We will review your request and get back to you within 24 hours.
             </AlertDescription>
           </Alert>

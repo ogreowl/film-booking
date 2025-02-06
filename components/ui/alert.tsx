@@ -1,9 +1,9 @@
 import * as React from "react"
 
-const Alert = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+const Alert = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>((
+  { ...props },
+  ref
+) => (
   <div
     ref={ref}
     role="alert"
@@ -11,18 +11,20 @@ const Alert = React.forwardRef<
     {...props}
   />
 ))
+
 Alert.displayName = "Alert"
 
-const AlertDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
+const AlertDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>((
+  { ...props },
+  ref
+) => (
   <div
     ref={ref}
     className="text-sm [&_p]:leading-relaxed"
     {...props}
   />
 ))
+
 AlertDescription.displayName = "AlertDescription"
 
 export { Alert, AlertDescription }
