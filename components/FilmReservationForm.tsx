@@ -11,7 +11,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 interface FormData {
   filmTitle: string;
   licensorName: string;
-  company: string;
+  venueName: string;
+  city: string;
+  state: string;
   email: string;
   startDate: string;
   endDate: string;
@@ -23,7 +25,9 @@ const FilmReservationForm = () => {
   const [formData, setFormData] = useState<FormData>({
     filmTitle: '',
     licensorName: '',
-    company: '',
+    venueName: '',
+    city: '',
+    state: '',
     email: '',
     startDate: '',
     endDate: '',
@@ -57,7 +61,6 @@ const FilmReservationForm = () => {
       return;
     }
 
-    // Here you would typically send the data to your backend
     console.log('Form submitted:', formData);
     setSubmitted(true);
   };
@@ -151,14 +154,39 @@ const FilmReservationForm = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
+              <Label htmlFor="venueName">Venue Name</Label>
               <Input
-                id="company"
-                name="company"
+                id="venueName"
+                name="venueName"
                 required
-                value={formData.company}
+                value={formData.venueName}
                 onChange={handleInputChange}
-                placeholder="Your company name"
+                placeholder="Enter venue name"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                name="city"
+                required
+                value={formData.city}
+                onChange={handleInputChange}
+                placeholder="Enter city"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="state">State</Label>
+              <Input
+                id="state"
+                name="state"
+                required
+                value={formData.state}
+                onChange={handleInputChange}
+                placeholder="Enter state"
               />
             </div>
           </div>
