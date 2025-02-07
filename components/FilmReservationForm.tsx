@@ -1,36 +1,44 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Plus, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-interface FormData {
+interface FilmEntry {
   filmTitle: string;
+  format: string;
+  startDate: string;
+  endDate: string;
+}
+
+interface FormData {
+  films: FilmEntry[];
   licensorName: string;
   venueName: string;
   city: string;
   state: string;
   email: string;
-  startDate: string;
-  endDate: string;
   territory: string;
   notes: string;
 }
 
 const FilmReservationForm = () => {
   const [formData, setFormData] = useState<FormData>({
-    filmTitle: '',
+    films: [{
+      filmTitle: '',
+      format: '',
+      startDate: '',
+      endDate: '',
+    }],
     licensorName: '',
     venueName: '',
     city: '',
     state: '',
     email: '',
-    startDate: '',
-    endDate: '',
     territory: '',
     notes: ''
   });
@@ -47,17 +55,45 @@ const FilmReservationForm = () => {
     setError('');
   };
 
-  const validateDates = () => {
-    const start = new Date(formData.startDate);
-    const end = new Date(formData.endDate);
+  const handleFilmInputChange = (index: number, field: keyof FilmEntry, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      films: prev.films.map((film, i) => 
+        i === index ? { ...film, [field]: value } : film
+      )
+    }));
+    setError('');
+  };
+
+  const addFilm = () => {
+    setFormData(prev => ({
+      ...prev,
+      films: [...prev.films, { filmTitle: '', format: '', startDate: '', endDate: '' }]
+    }));
+  };
+
+  const removeFilm = (index: number) => {
+    if (formData.films.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        films: prev.films.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const validateDates = (film: FilmEntry) => {
+    const start = new Date(film.startDate);
+    const end = new Date(film.endDate);
     return start < end;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateDates()) {
-      setError('End date must be after start date');
+    // Validate all film dates
+    const invalidDates = formData.films.some(film => !validateDates(film));
+    if (invalidDates) {
+      setError('End dates must be after start dates');
       return;
     }
 
@@ -66,12 +102,11 @@ const FilmReservationForm = () => {
         method: 'POST',
         mode: 'no-cors',
         headers: {
-          'Content-Type': 'text/plain',  // Changed from application/json due to CORS
+          'Content-Type': 'text/plain',
         },
         body: JSON.stringify(formData)
       });
 
-      // If we get here, assume success since we can't check response with no-cors
       setSubmitted(true);
     } catch (err) {
       setError('Failed to submit form. Please try again.');
@@ -86,8 +121,8 @@ const FilmReservationForm = () => {
           <Alert>
             <Calendar className="h-4 w-4" />
             <AlertDescription>
-              Your reservation request for &quot;{formData.filmTitle}&quot; has been submitted. 
-              We will review your request and get back to you within 24 hours.
+              Your booking request has been submitted. 
+              We will review your request and get back to you within 48 hours.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -98,23 +133,95 @@ const FilmReservationForm = () => {
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Film License Reservation</CardTitle>
+        <CardTitle>Janus Booking Request</CardTitle>
         <CardDescription>
-          Reserve screening rights for your territory
+          Send booking request to Janus Films. If you don&apos;t hear back in 48 hours, feel free to send an email to booking@janusfilms.com
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {formData.films.map((film, index) => (
+            <div key={index} className="space-y-4 p-4 border rounded-lg relative">
+              {formData.films.length > 1 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={() => removeFilm(index)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`filmTitle-${index}`}>Film Title</Label>
+                  <Input
+                    id={`filmTitle-${index}`}
+                    required
+                    value={film.filmTitle}
+                    onChange={(e) => handleFilmInputChange(index, 'filmTitle', e.target.value)}
+                    placeholder="Enter film title"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`format-${index}`}>Format</Label>
+                  <Input
+                    id={`format-${index}`}
+                    required
+                    value={film.format}
+                    onChange={(e) => handleFilmInputChange(index, 'format', e.target.value)}
+                    placeholder="e.g. DCP, 35mm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`startDate-${index}`}>Start Date</Label>
+                  <Input
+                    id={`startDate-${index}`}
+                    type="date"
+                    required
+                    value={film.startDate}
+                    onChange={(e) => handleFilmInputChange(index, 'startDate', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`endDate-${index}`}>End Date</Label>
+                  <Input
+                    id={`endDate-${index}`}
+                    type="date"
+                    required
+                    value={film.endDate}
+                    onChange={(e) => handleFilmInputChange(index, 'endDate', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={addFilm}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Another Film
+          </Button>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="filmTitle">Film Title</Label>
+              <Label htmlFor="licensorName">Your Name</Label>
               <Input
-                id="filmTitle"
-                name="filmTitle"
+                id="licensorName"
+                name="licensorName"
                 required
-                value={formData.filmTitle}
+                value={formData.licensorName}
                 onChange={handleInputChange}
-                placeholder="Enter film title"
+                placeholder="Enter your full name"
               />
             </div>
             <div className="space-y-2">
@@ -132,42 +239,6 @@ const FilmReservationForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
-              <Input
-                id="startDate"
-                name="startDate"
-                type="date"
-                required
-                value={formData.startDate}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
-              <Input
-                id="endDate"
-                name="endDate"
-                type="date"
-                required
-                value={formData.endDate}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="licensorName">Your Name</Label>
-              <Input
-                id="licensorName"
-                name="licensorName"
-                required
-                value={formData.licensorName}
-                onChange={handleInputChange}
-                placeholder="Enter your full name"
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="venueName">Venue Name</Label>
               <Input
                 id="venueName"
@@ -176,6 +247,18 @@ const FilmReservationForm = () => {
                 value={formData.venueName}
                 onChange={handleInputChange}
                 placeholder="Enter venue name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="your@email.com"
               />
             </div>
           </div>
@@ -206,19 +289,6 @@ const FilmReservationForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="your@email.com"
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="notes">Additional Notes</Label>
             <Input
               id="notes"
@@ -241,7 +311,7 @@ const FilmReservationForm = () => {
           onClick={handleSubmit}
           className="w-full"
         >
-          Submit Reservation Request
+          Submit Booking Request
         </Button>
       </CardFooter>
     </Card>
